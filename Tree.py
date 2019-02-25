@@ -45,8 +45,8 @@ class Tree:
         else:
             raise TypeError("right child should be of type Tree!")
 
-    def visualize(self):
-        dot = graphviz.Digraph('g', filename='btree.gv', node_attr={'shape': 'record', 'height': '.1'}, comment="Test")
+    def visualize(self, name="tree"):
+        dot = graphviz.Digraph('g', node_attr={'shape': 'record', 'height': '.1'}, comment="Test")
         
         nodes = [(self, 0)]
         dot.node(str(0), graphviz.nohtml("<f0> |<f1> " + str(self.value) + "|<f2>"))
@@ -66,4 +66,4 @@ class Tree:
                 dot.edge(str(currentID) + ":f2", str(nodeID) + ":f1", label="False")
                 nodeID += 1
         
-        dot.render('test.gv', view=True)
+        dot.render(name + ".gv", view=True)
