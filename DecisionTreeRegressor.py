@@ -11,6 +11,10 @@ class DecisionTreeRegressor:
     decisionTree = Tree()
 
     def fit(self, X, y, node=None):
+        self.induction(X, y, self.decisionTree)
+        #self.pruning(X, y, self.decisionTree)
+    
+    def induction(self, X, y, node):
         (feature, splittingPoint) = self.findBestSplittingPoint(X, y)
         
         leftX, leftY, rightX, rightY = self.splitData(X, y, feature, splittingPoint)
@@ -21,12 +25,11 @@ class DecisionTreeRegressor:
         if 5 <= len(leftX) and 5 <= len(rightX):
             node.value = (feature, splittingPoint)
             node.left = Tree(parent=node)
-            self.fit(leftX, leftY, node.left)
+            self.induction(leftX, leftY, node.left)
             node.right = Tree(parent=node)
-            self.fit(rightX, rightY, node.right)
+            self.induction(rightX, rightY, node.right)
         else:
             node.value = statistics.mean(leftY + rightY)
-
 
     def findBestSplittingPoint(self, X, y):
         featuresSortedByY = self.sortFeaturesByY(X, y)
@@ -120,6 +123,89 @@ class DecisionTreeRegressor:
 
         return bestSplittingPoints[randint(0, len(bestSplittingPoints) - 1)]
 
+    def pruning(self, X, y, node):
+        if node is None:
+            return
+
+        if node.left is None and node.right is None:
+            savedParentValue = node.parent.value
+            savedParentLeft = node.parent.left
+            savedParentRight = node.parent.right
+
+            errorBeforePruning = self.validate(X, y)
+            xAtParent, yAtParent = self.calculateXyAtNode(X, y, node.parent)
+            errorAfterPrunning = self.validate(X, y)
+
+            if errorBeforePruning < errorAfterPrunning:
+                node.parent.value = savedParentValue
+                node.parent.left = savedParentLeft
+                node.parent.right = savedParentRight
+            return
+        
+        self.pruning(X, y, node.left)
+        self.pruning(X, y, node.right)
+
+    def calculateXyAtNode(self, X, y, node, currentNode=None):
+        nodes = [node]
+        currentNode = node
+        while currentNode.parent is not None:
+            nodes.append(currentNode.parent)
+            currentNode = currentNode.parent
+
+        currentNode = nodes.pop()
+        nextNode = currentNode
+        while currentNode != node:
+            nextNode = nodes.pop()
+
+            newX = []
+            newY = []
+            for i in range(len(X)):
+                if nextNode == currentNode.left and X[i][currentNode.value[0]] <= currentNode.value[1]:
+                    newX.append(X[i])
+                    newY.append(y[i])
+                elif nextNode == currentNode.right and X[i][currentNode.value[0]] > currentNode.value[1]:
+                    newX.append(X[i])
+                    newY.append(y[i])
+            X = newX
+            y = newY
+
+            currentNode = nextNode
+
+        return X, y
+        #print("FOUND NODE: ", nodes.pop() == self.decisionTree)
+
+
+        #if currentNode is None:
+            #currentNode = self.decisionTree
+        
+        #if currentNode.left is None and currentNode.right is None:
+            #return None, None
+
+        #if currentNode == node:
+            #return X, y
+        
+        #XLeft = []
+        #yLeft = []
+        #XRight = []
+        #yRight = []
+        #for i in range(len(X)):
+            #if X[i][currentNode.value[0]] <= currentNode.value[1]:
+                #XLeft.append(X[i])
+                #yLeft.append(y[i])
+            #else:
+            #    XRight.append(X[i])
+                #yRight.append(y[i])
+        
+        #newX, newY = self.calculateXyAtNode(XLeft, yLeft, node, currentNode.left)
+        #if newX is not None and newY is not None:
+            #return newX, newY
+        
+        #newX, newY = self.calculateXyAtNode(XRight, yRight, node, currentNode.right)
+        #if newX is not None and newY is not None:
+            #return newX, newY
+        
+        #return None, None
+
     def predict(self, x):
         node = self.decisionTree
         while node.left is not None or node.right is not None:
@@ -128,7 +214,12 @@ class DecisionTreeRegressor:
             else:
                 node = node.right
         return node.value
-
+    
+    def validate(self, X, y):
+        sumOfSquaredErrors = 0
+        for i in range(len(X)):
+            sumOfSquaredErrors += math.pow(y[i] - self.predict(X[i]), 2)
+        return sumOfSquaredErrors / len(X)
 
 
 X = [[0], [1], [2], [3], [4], [5], [6], [7], [8], [9], 
@@ -140,9 +231,28 @@ y = [1 for _ in range(10)] + [2 for _ in range(10)] + [3 for _ in range(10)] + [
 regressor = DecisionTreeRegressor()
 regressor.fit(X, y)
 
-print(regressor.predict([[2]]))
-print(regressor.predict([[15]]))
-print(regressor.predict([[18]]))
-print(regressor.predict([[25]]))
+print("Values:")
+print(regressor.calculateXyAtNode(X, y, regressor.decisionTree))
+print()
+print(regressor.calculateXyAtNode(X, y, regressor.decisionTree.left))
+print()
+print(regressor.calculateXyAtNode(X, y, regressor.decisionTree.right))
+print()
+print(regressor.calculateXyAtNode(X, y, regressor.decisionTree.left.left))
+print()
+print(regressor.calculateXyAtNode(X, y, regressor.decisionTree.left.right))
+print()
+print(regressor.calculateXyAtNode(X, y, regressor.decisionTree.right.left))
+print()
+print(regressor.calculateXyAtNode(X, y, regressor.decisionTree.right.right))
 
 regressor.decisionTree.visualize()
+
+#print("Validation: ", regressor.validate(X, y))
+
+#print(regressor.predict([[2]]))
+#print(regressor.predict([[15]]))
+#print(regressor.predict([[18]]))
+#print(regressor.predict([[25]]))
+
+#regressor.decisionTree.visualize()
