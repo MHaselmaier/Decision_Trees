@@ -59,12 +59,22 @@ class DecisionTreeRegressor:
     def calculatePossibleSplittingPointsPerFeature(self, featuresSortedByY):
         possibleSplittingPointsPerFeature = []
 
+        possibleSplittingPointsPerFeature += self.percentileSplittingPoints(5, featuresSortedByY)
+
+        return possibleSplittingPointsPerFeature
+
+    def percentileSplittingPoints(self, stepsize, featuresSortedByY):
+        if 0 >= stepsize or 100 <= stepsize:
+            raise ValueError("stepsize must be in interval [1,99]")
+        
+        possibleSplittingPointsPerFeature = []
+
         for feature in featuresSortedByY:
             possibleSplittingPoints = []
-            for i in range(5, 96, 5):
+            for i in range(stepsize, 100 - stepsize + 1, stepsize):
                 possibleSplittingPoints.append(np.percentile(feature, i))
             possibleSplittingPointsPerFeature.append(possibleSplittingPoints)
-
+        
         return possibleSplittingPointsPerFeature
 
     def calculateSplittingPointSTDReductions(self, possibleSplittingPointsPerFeature, X, y):
