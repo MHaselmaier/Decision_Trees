@@ -31,13 +31,6 @@ class DecisionTree(ABC):
         featuresSortedByY = self.sortFeaturesByY(X, y)
         possibleSplittingPointsPerFeature = self.calculatePossibleSplittingPointsPerFeature(featuresSortedByY)
         splittingPointSTDReductions = self.calculateSplittingPointSTDReductions(possibleSplittingPointsPerFeature, X, y)
-
-        print()
-        print(featuresSortedByY)
-        print(possibleSplittingPointsPerFeature)
-        print(splittingPointSTDReductions)
-        print()
-        
         return self.bestSplittingPoint(splittingPointSTDReductions, possibleSplittingPointsPerFeature)
 
     def sortFeaturesByY(self, X, y):
@@ -136,7 +129,7 @@ class DecisionTree(ABC):
         self.pruning(X, y, node.left)
         self.pruning(X, y, node.right)
 
-        if node.left is None and node.right is None:
+        if node.left is None and node.right is None and node.parent is not None:
             savedParentValue = node.parent.value
             savedParentLeft = node.parent.left
             savedParentRight = node.parent.right
@@ -182,7 +175,7 @@ class DecisionTree(ABC):
         return X, y
 
     @abstractmethod
-    def predict(self, x):
+    def predict(self, X):
         pass
 
     def validate(self, X, y):
