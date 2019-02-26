@@ -129,7 +129,31 @@ class DecisionTree(ABC):
 
         return bestSplittingPoints[randint(0, len(bestSplittingPoints) - 1)]
 
-    def calculateXyAtNode(self, X, y, node, currentNode=None):
+    def pruning(self, X, y, node):
+        if node is None:
+            return
+
+        self.pruning(X, y, node.left)
+        self.pruning(X, y, node.right)
+
+        if node.left is None and node.right is None:
+            savedParentValue = node.parent.value
+            savedParentLeft = node.parent.left
+            savedParentRight = node.parent.right
+
+            errorBeforePruning = self.validate(X, y)
+            _, yAtParent = self.calculateXyAtNode(X, y, node.parent)
+            node.parent.left = node.parent.right = None
+            node.parent.value = statistics.mean(yAtParent)
+            errorAfterPrunning = self.validate(X, y)
+
+            if errorBeforePruning < errorAfterPrunning:
+                node.parent.value = savedParentValue
+                node.parent.left = savedParentLeft
+                node.parent.right = savedParentRight
+            return
+
+    def calculateXyAtNode(self, X, y, node):
         nodes = [node]
         currentNode = node
         while currentNode.parent is not None:
@@ -158,9 +182,11 @@ class DecisionTree(ABC):
         return X, y
 
     @abstractmethod
-    def predict(self, x, y):
+    def predict(self, x):
         pass
 
-    @abstractmethod
     def validate(self, X, y):
-        pass
+        sumOfSquaredErrors = 0
+        for i in range(len(X)):
+            sumOfSquaredErrors += math.pow(y[i] - self.predict(X[i]), 2)
+        return sumOfSquaredErrors / len(X)
