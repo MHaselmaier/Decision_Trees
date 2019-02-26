@@ -63,7 +63,7 @@ class DecisionTree(ABC):
 
         for feature in featuresSortedByY:
             possibleSplittingPoints = []
-            for i in range(stepsize, 100 - stepsize + 1, stepsize):
+            for i in range(0, 100 + 1, stepsize):
                 possibleSplittingPoints.append(np.percentile(feature, i))
             possibleSplittingPointsPerFeature.append(possibleSplittingPoints)
         
