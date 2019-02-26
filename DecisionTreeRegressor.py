@@ -8,7 +8,7 @@ from Tree import Tree
 
 class DecisionTreeRegressor(DecisionTree):
     def __init__(self, minSamples=5):
-        super.__init__(minSamples=minSamples)
+        super().__init__(minSamples=minSamples)
         self.decisionTree = Tree()
 
     def fit(self, X, y):
