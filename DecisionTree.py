@@ -17,17 +17,22 @@ class DecisionTree(ABC):
         pass
     
     def induction(self, X, y, node):
-        (feature, splittingPoint) = self.findBestSplittingPoint(X, y)
+        node.value = self.findBestSplittingPoint(X, y)
         
-        leftX, leftY, rightX, rightY = self.splitData(X, y, feature, splittingPoint)
-
-        if self.minSamples <= len(leftX) and self.minSamples <= len(rightX):
-            node.value = (feature, splittingPoint)
+        leftX, leftY, rightX, rightY = self.splitData(X, y, node.value[0], node.value[1])
+        if self.minSamples > len(leftX):
+            node.left = Tree(statistics.mean(leftY), node)
+        else:
             node.left = Tree(parent=node)
             self.induction(leftX, leftY, node.left)
+        if self.minSamples > len(rightX):
+            node.right = Tree(statistics.mean(rightY), node)
+        else:
             node.right = Tree(parent=node)
             self.induction(rightX, rightY, node.right)
-        else:
+
+        if self.minSamples > len(leftX) and self.minSamples > len(leftY):
+            node.left = node.right = None
             node.value = statistics.mean(leftY + rightY)
 
     def findBestSplittingPoint(self, X, y):
@@ -78,7 +83,7 @@ class DecisionTree(ABC):
             for splittingPoint in possibleSplittingPointsPerFeature[i]:
                 leftX, leftY, rightX, rightY = self.splitData(X, y, i, splittingPoint)
 
-                if 2 > len(leftX) or 2 > len(rightX):
+                if 1 > len(leftX) or 1 > len(rightX):
                     splittingPointError.append(math.inf)
                     continue
                 
@@ -135,7 +140,7 @@ class DecisionTree(ABC):
         self.pruning(X, y, node.left)
         self.pruning(X, y, node.right)
 
-        if node.left is None and node.right is None and node.parent is not None:
+        if (node.left is None or node.right is None) and node.parent is not None:
             savedParentValue = node.parent.value
             savedParentLeft = node.parent.left
             savedParentRight = node.parent.right
