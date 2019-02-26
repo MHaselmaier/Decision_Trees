@@ -9,6 +9,9 @@ from Tree import Tree
 
 
 class DecisionTree(ABC):
+    def __init__(self, minSamples=5):
+        self.minSamples = minSamples
+
     @abstractmethod
     def fit(self, X, y):
         pass
@@ -18,7 +21,7 @@ class DecisionTree(ABC):
         
         leftX, leftY, rightX, rightY = self.splitData(X, y, feature, splittingPoint)
 
-        if 5 <= len(leftX) and 5 <= len(rightX):
+        if self.minSamples <= len(leftX) and self.minSamples <= len(rightX):
             node.value = (feature, splittingPoint)
             node.left = Tree(parent=node)
             self.induction(leftX, leftY, node.left)
