@@ -1,7 +1,7 @@
 import numpy as np
 
 from abc import ABC, abstractmethod
-from random import randint
+import random
 import statistics
 import math
 
@@ -33,8 +33,8 @@ class DecisionTree(ABC):
     def findBestSplittingPoint(self, X, y):
         featuresSortedByY = self.sortFeaturesByY(X, y)
         possibleSplittingPointsPerFeature = self.calculatePossibleSplittingPointsPerFeature(featuresSortedByY)
-        splittingPointSTDReductions = self.calculateSplittingPointSTDReductions(possibleSplittingPointsPerFeature, X, y)
-        return self.bestSplittingPoint(splittingPointSTDReductions, possibleSplittingPointsPerFeature)
+        splittingPointErrors = self.calculateSplittingPointErrors(possibleSplittingPointsPerFeature, X, y)
+        return self.bestSplittingPoint(splittingPointErrors, possibleSplittingPointsPerFeature)
 
     def sortFeaturesByY(self, X, y):
         featuresSortedByY = []
@@ -69,29 +69,32 @@ class DecisionTree(ABC):
         
         return possibleSplittingPointsPerFeature
 
-    def calculateSplittingPointSTDReductions(self, possibleSplittingPointsPerFeature, X, y):
-        splittingPointSTDReductions = []
-
-        std = statistics.stdev(y)
+    def calculateSplittingPointErrors(self, possibleSplittingPointsPerFeature, X, y):
+        splittingPointErrors = []
 
         for i in range(len(possibleSplittingPointsPerFeature)):
-            splittingPointSTDReduction = []
+            splittingPointError = []
 
             for splittingPoint in possibleSplittingPointsPerFeature[i]:
                 leftX, leftY, rightX, rightY = self.splitData(X, y, i, splittingPoint)
 
                 if 2 > len(leftX) or 2 > len(rightX):
-                    splittingPointSTDReduction.append(0)
+                    splittingPointError.append(math.inf)
                     continue
                 
-                leftSTD = statistics.stdev(leftY)
-                rightSTD = statistics.stdev(rightY)
+                leftYMean = statistics.mean(leftY)
+                rightYMean = statistics.mean(rightY)
 
-                newSTD = (len(leftX) / len(X)) * leftSTD + (len(rightX) / len(X)) * rightSTD
-                splittingPointSTDReduction.append(std - newSTD)
-            splittingPointSTDReductions.append(splittingPointSTDReduction)
+                error = 0
+                for prediction in leftY:
+                    error += math.pow(prediction - leftYMean, 2)
+                for prediction in rightY:
+                    error += math.pow(prediction - rightYMean, 2)
 
-        return splittingPointSTDReductions
+                splittingPointError.append(error)
+            splittingPointErrors.append(splittingPointError)
+
+        return splittingPointErrors
 
     def splitData(self, X, y, feature, splittingPoint):
         leftX = []
@@ -109,21 +112,21 @@ class DecisionTree(ABC):
 
         return leftX, leftY, rightX, rightY
 
-    def bestSplittingPoint(self, splittingPointSTDReductions, possibleSplittingPointsPerFeature):
+    def bestSplittingPoint(self, splittingPointErrors, possibleSplittingPointsPerFeature):
         bestSplittingPoints = []
 
-        maxSTDReduction = -math.inf
-        for i in range(len(splittingPointSTDReductions)):
-            for j in range(len(splittingPointSTDReductions[i])):
-                if maxSTDReduction > splittingPointSTDReductions[i][j]:
+        minError = math.inf
+        for i in range(len(splittingPointErrors)):
+            for j in range(len(splittingPointErrors[i])):
+                if minError < splittingPointErrors[i][j]:
                     continue
-                if maxSTDReduction < splittingPointSTDReductions[i][j]:
-                    maxSTDReduction = splittingPointSTDReductions[i][j]
+                if minError > splittingPointErrors[i][j]:
+                    minError = splittingPointErrors[i][j]
                     bestSplittingPoints.clear()
                 
                 bestSplittingPoints.append((i, possibleSplittingPointsPerFeature[i][j]))
 
-        return bestSplittingPoints[randint(0, len(bestSplittingPoints) - 1)]
+        return bestSplittingPoints[random.randint(0, len(bestSplittingPoints) - 1)]
 
     def pruning(self, X, y, node):
         if node is None:
