@@ -17,7 +17,12 @@ class DecisionTree(ABC):
         pass
     
     def induction(self, X, y, node):
-        feature, splittingPoint = self.findBestSplittingPoint(X, y)        
+        feature, splittingPoint = self.findBestSplittingPoint(X, y)
+        if feature is None or splittingPoint is None:
+            node.left = node.right = None
+            node.value = statistics.mean(y), len(X), self.calculateMSE(y)
+            return
+
         leftX, leftY, rightX, rightY = self.splitData(X, y, feature, splittingPoint)
         node.value = feature, splittingPoint, len(X), self.calculateMSE(y)
 
@@ -34,7 +39,7 @@ class DecisionTree(ABC):
 
         if self.minSamples > len(leftX) and self.minSamples > len(leftY):
             node.left = node.right = None
-            node.value = node.value = statistics.mean(y), len(X), self.calculateMSE(y)
+            node.value = statistics.mean(y), len(X), self.calculateMSE(y)
 
     def findBestSplittingPoint(self, X, y):
         featuresSortedByY = self.sortFeaturesByY(X, y)
@@ -85,7 +90,7 @@ class DecisionTree(ABC):
                 leftX, leftY, rightX, rightY = self.splitData(X, y, i, splittingPoint)
 
                 if 1 > len(leftX) or 1 > len(rightX):
-                    splittingPointError.append(math.inf)
+                    splittingPointError.append(float("nan"))
                     continue
                 
                 leftYMean = statistics.mean(leftY)
@@ -119,12 +124,12 @@ class DecisionTree(ABC):
         return leftX, leftY, rightX, rightY
 
     def bestSplittingPoint(self, splittingPointErrors, possibleSplittingPointsPerFeature):
-        bestSplittingPoints = []
+        bestSplittingPoints = [(None, None)]
 
         minError = math.inf
         for i in range(len(splittingPointErrors)):
             for j in range(len(splittingPointErrors[i])):
-                if minError < splittingPointErrors[i][j]:
+                if minError < splittingPointErrors[i][j] or math.isnan(splittingPointErrors[i][j]):
                     continue
                 if minError > splittingPointErrors[i][j]:
                     minError = splittingPointErrors[i][j]
