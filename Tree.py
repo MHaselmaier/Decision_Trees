@@ -45,30 +45,18 @@ class Tree:
         else:
             raise TypeError("right child should be of type Tree!")
 
-    def visualize(self, name="tree", dot=None, nodeID=0):
+    def visualize(self, name="tree", dot=None, valueToText=lambda value : str(value)):
         render = dot is None
         if dot is None:
-            dot = graphviz.Digraph('g', node_attr={'shape': 'record', 'height': '.1'})
+            dot = graphviz.Digraph(engine="dot", node_attr={'shape': 'record', 'height': '.1'})
         
-        nodes = [(self, nodeID)]
-        dot.node(str(nodeID), graphviz.nohtml("<f0> |<f1> " + str(self.value) + "|<f2>"))
-        nodeID += 1
-        while 0 < len(nodes):
-            currentNode, currentID = nodes.pop()
-
-            if currentNode.left is not None:
-                dot.node(str(nodeID), graphviz.nohtml("<f0> |<f1> " + str(currentNode.left.value) + "|<f2>"))
-                nodes.append((currentNode.left, nodeID))
-                dot.edge(str(currentID) + ":f0", str(nodeID) + ":f1", label="True")
-                nodeID += 1
-            
-            if currentNode.right is not None:
-                dot.node(str(nodeID), graphviz.nohtml("<f0> |<f1> " + str(currentNode.right.value) + "|<f2>"))
-                nodes.append((currentNode.right, nodeID))
-                dot.edge(str(currentID) + ":f2", str(nodeID) + ":f1", label="False")
-                nodeID += 1
+        dot.node(name, graphviz.nohtml("<f0> |<f1> " + valueToText(self.value) + " |<f2>"))
+        if self.left:
+            self.left.visualize(name + "l", dot, valueToText)
+            dot.edge(name + ":f0", name + "l:f1", "True")
+        if self.right:
+            self.right.visualize(name + "r", dot, valueToText)
+            dot.edge(name + ":f2", name + "r:f1", "False")
         
         if render:
-            dot.render(name + ".gv", view=True, cleanup=True)
-            
-        return nodeID
+            dot.render(name, view=True, cleanup=True)

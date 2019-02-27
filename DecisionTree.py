@@ -17,23 +17,24 @@ class DecisionTree(ABC):
         pass
     
     def induction(self, X, y, node):
-        node.value = self.findBestSplittingPoint(X, y)
-        
-        leftX, leftY, rightX, rightY = self.splitData(X, y, node.value[0], node.value[1])
+        feature, splittingPoint = self.findBestSplittingPoint(X, y)        
+        leftX, leftY, rightX, rightY = self.splitData(X, y, feature, splittingPoint)
+        node.value = feature, splittingPoint, len(X), self.calculateMSE(y)
+
         if self.minSamples > len(leftX):
-            node.left = Tree(statistics.mean(leftY), node)
+            node.left = Tree((statistics.mean(leftY), len(leftX), self.calculateMSE(leftY)), node)
         else:
             node.left = Tree(parent=node)
             self.induction(leftX, leftY, node.left)
         if self.minSamples > len(rightX):
-            node.right = Tree(statistics.mean(rightY), node)
+            node.right = Tree((statistics.mean(rightY), len(rightX), self.calculateMSE(rightY)), node)
         else:
             node.right = Tree(parent=node)
             self.induction(rightX, rightY, node.right)
 
         if self.minSamples > len(leftX) and self.minSamples > len(leftY):
             node.left = node.right = None
-            node.value = statistics.mean(leftY + rightY)
+            node.value = node.value = statistics.mean(y), len(X), self.calculateMSE(y)
 
     def findBestSplittingPoint(self, X, y):
         featuresSortedByY = self.sortFeaturesByY(X, y)
@@ -133,6 +134,15 @@ class DecisionTree(ABC):
 
         return bestSplittingPoints[random.randint(0, len(bestSplittingPoints) - 1)]
 
+    def calculateMSE(self, y):
+        mse = 0
+
+        prediction = statistics.mean(y)
+        for i in range(len(y)):
+            mse += math.pow(y[i] - prediction, 2)
+
+        return mse / len(y)
+
     def pruning(self, X, y, node):
         if node is None:
             return
@@ -148,7 +158,7 @@ class DecisionTree(ABC):
             errorBeforePruning = self.validate(X, y)
             _, yAtParent = self.calculateXyAtNode(X, y, node.parent)
             node.parent.left = node.parent.right = None
-            node.parent.value = statistics.mean(yAtParent)
+            node.parent.value = (statistics.mean(yAtParent), len(yAtParent), self.calculateMSE(yAtParent))
             errorAfterPrunning = self.validate(X, y)
 
             if errorBeforePruning < errorAfterPrunning:
@@ -194,3 +204,13 @@ class DecisionTree(ABC):
         for i in range(len(X)):
             sumOfSquaredErrors += math.pow(y[i] - self.predict(X[i]), 2)
         return sumOfSquaredErrors / len(X)
+    
+    @abstractmethod
+    def visualize(self, name="tree", header=None):
+        pass
+    
+    def valueToText(self, header, value):
+        if 3 == len(value):
+            return "prediction: " + str(value[0]) + "\\nsamples: " + str(value[1]) + "\\nmse: " + str(value[2])
+
+        return header[value[0]] + "\\n\\<= " + str(value[1]) + "\\nsamples: " + str(value[2]) + "\\nmse: " + str(value[3])

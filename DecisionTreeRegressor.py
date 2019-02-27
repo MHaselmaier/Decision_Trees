@@ -25,10 +25,13 @@ class DecisionTreeRegressor(DecisionTree):
         predictions = []
         for x in X:
             node = self.decisionTree
-            while node.left is not None or node.right is not None:
+            while node.left or node.right:
                 if x[node.value[0]] <= node.value[1]:
                     node = node.left
                 else:
                     node = node.right
-            predictions.append(node.value)
+            predictions.append(node.value[0])
         return predictions if 1 < len(predictions) else predictions[0]
+
+    def visualize(self, name="regressor", header=None):
+        self.decisionTree.visualize(name=name, valueToText=lambda value : self.valueToText(header, value))

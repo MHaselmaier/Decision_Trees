@@ -1,3 +1,5 @@
+import graphviz
+
 from abc import ABC, abstractmethod
 import collections
 import math
@@ -29,12 +31,12 @@ class BoostedDecisionTreeRegressor(DecisionTree):
 
     def predictionFromGivenTree(self, x, decisionTree):
         node = decisionTree
-        while node.left is not None or node.right is not None:
+        while node.left or node.right:
             if x[node.value[0]] <= node.value[1]:
                 node = node.left
             else:
                 node = node.right
-        return node.value
+        return node.value[0]
 
     def predict(self, X):
         if not isinstance(X, collections.Iterable):
@@ -56,3 +58,13 @@ class BoostedDecisionTreeRegressor(DecisionTree):
 
             predictions.append(prediction)
         return predictions if 1 < len(predictions) else predictions[0]
+
+    def visualize(self, name="boosted", header=None):
+        dot = graphviz.Digraph(engine="dot", node_attr={'shape': 'record', 'height': '.1'})
+
+        dot.attr(packmode="array")
+        for i in range(len(self.decisionTrees)):
+            with dot.subgraph(name="tree" + str(i)) as d:
+                self.decisionTrees[i].visualize(name + str(i), d, lambda value : self.valueToText(header, value))
+
+        dot.render(name, view=True, cleanup=True)

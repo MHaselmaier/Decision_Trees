@@ -1,3 +1,5 @@
+import graphviz
+
 import collections
 import random
 
@@ -42,12 +44,22 @@ class RandomForestRegressor(RandomDecisionTree):
                         node = node.right
                 
                 if prediction is None:
-                    prediction = node.value
-                elif node.value is not None:
-                    prediction += node.value
+                    prediction = node.value[0]
+                elif node.value:
+                    prediction += node.value[0]
             
-            if prediction is not None:
+            if prediction:
                 prediction = prediction / len(self.decisionTrees)
 
             predictions.append(prediction)
         return predictions if 1 < len(predictions) else predictions[0]
+
+    def visualize(self, name="random", header=None):
+        dot = graphviz.Digraph(engine="dot", node_attr={'shape': 'record', 'height': '.1'})
+
+        dot.attr(packmode="array")
+        for i in range(len(self.decisionTrees)):
+            with dot.subgraph(name="tree" + str(i)) as d:
+                self.decisionTrees[i].visualize(name + str(i), d, lambda value : self.valueToText(header, value))
+
+        dot.render(name, view=True, cleanup=True)
