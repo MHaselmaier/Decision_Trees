@@ -20,26 +20,26 @@ class DecisionTree(ABC):
         feature, splittingPoint = self.findBestSplittingPoint(X, y)
         if feature is None or splittingPoint is None:
             node.left = node.right = None
-            node.value = statistics.mean(y), len(X), self.calculateMSE(y)
+            node.value = statistics.mean(y), self.calculateMSE(y), len(X)
             return
 
         leftX, leftY, rightX, rightY = self.splitData(X, y, feature, splittingPoint)
-        node.value = feature, splittingPoint, len(X), self.calculateMSE(y)
+        node.value = feature, splittingPoint, statistics.mean(y), self.calculateMSE(y), len(X)
 
         if self.minSamples > len(leftX):
-            node.left = Tree((statistics.mean(leftY), len(leftX), self.calculateMSE(leftY)), node)
+            node.left = Tree((statistics.mean(leftY), self.calculateMSE(leftY), len(leftX)), node)
         else:
             node.left = Tree(parent=node)
             self.induction(leftX, leftY, node.left)
         if self.minSamples > len(rightX):
-            node.right = Tree((statistics.mean(rightY), len(rightX), self.calculateMSE(rightY)), node)
+            node.right = Tree((statistics.mean(rightY), self.calculateMSE(rightY), len(rightX)), node)
         else:
             node.right = Tree(parent=node)
             self.induction(rightX, rightY, node.right)
 
         if self.minSamples > len(leftX) and self.minSamples > len(leftY):
             node.left = node.right = None
-            node.value = statistics.mean(y), len(X), self.calculateMSE(y)
+            node.value = statistics.mean(y), self.calculateMSE(y), len(X)
 
     def findBestSplittingPoint(self, X, y):
         featuresSortedByY = self.sortFeaturesByY(X, y)
@@ -173,7 +173,7 @@ class DecisionTree(ABC):
             errorBeforePruning = self.validate(X, y)
             _, yAtParent = self.calculateXyAtNode(X, y, node.parent)
             node.parent.left = node.parent.right = None
-            node.parent.value = (statistics.mean(yAtParent), len(yAtParent), self.calculateMSE(yAtParent))
+            node.parent.value = statistics.mean(yAtParent), self.calculateMSE(yAtParent), len(yAtParent)
             errorAfterPrunning = self.validate(X, y)
 
             if errorBeforePruning < errorAfterPrunning:
@@ -226,6 +226,6 @@ class DecisionTree(ABC):
     
     def valueToText(self, header, value):
         if 3 == len(value):
-            return "prediction: " + str(value[0]) + "\\nsamples: " + str(value[1]) + "\\nmse: " + str(value[2])
+            return "mse: " + str(value[1]) + "\\nsamples: " + str(value[2]) + "\\nvalue: " + str(value[0])
 
-        return header[value[0]] + "\\n\\<= " + str(value[1]) + "\\nsamples: " + str(value[2]) + "\\nmse: " + str(value[3])
+        return header[value[0]] + "\\n\\<= " + str(value[1]) + "\\nmse: " + str(value[3]) +  "\\nsamples: " + str(value[4]) + "\\nvalue: " + str(value[2])
