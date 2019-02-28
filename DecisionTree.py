@@ -180,7 +180,6 @@ class DecisionTree(ABC):
                 node.parent.value = savedParentValue
                 node.parent.left = savedParentLeft
                 node.parent.right = savedParentRight
-            return
 
     def calculateXyAtNode(self, X, y, node):
         nodes = [node]
@@ -215,10 +214,15 @@ class DecisionTree(ABC):
         pass
 
     def validate(self, X, y):
-        sumOfSquaredErrors = 0
-        for i in range(len(X)):
-            sumOfSquaredErrors += math.pow(y[i] - self.predict(X[i]), 2)
-        return sumOfSquaredErrors / len(X)
+        # Standard Error of Regression
+        distances = [abs(yActual - yPredict) for (yActual, yPredict) in zip(y, self.predict(X))]
+        return statistics.mean(distances)
+        
+        # RMSE:
+        #mse = 0
+        #for i in range(len(X)):
+        #   mse += (math.pow(y[i] - self.predict(X[i]), 2)) / len(X)
+        #return math.sqrt(mse)
     
     @abstractmethod
     def visualize(self, name="tree", header=None):
