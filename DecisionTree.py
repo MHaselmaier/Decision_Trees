@@ -60,9 +60,15 @@ class DecisionTree(ABC):
         return featuresSortedByY
 
     def calculatePossibleSplittingPointsPerFeature(self, featuresSortedByY):
-        possibleSplittingPointsPerFeature = []
+        possibleSplittingPointsPerFeature = [[] for _ in featuresSortedByY]
 
-        possibleSplittingPointsPerFeature += self.percentileSplittingPoints(5, featuresSortedByY)
+        percentileSplittingPoints = self.percentileSplittingPoints(5, featuresSortedByY)
+        for i in range(len(featuresSortedByY)):
+            possibleSplittingPointsPerFeature[i] += percentileSplittingPoints[i]
+
+        splittingPointsAtEachValue = self.splittingPointsAtEachValue(featuresSortedByY)
+        for i in range(len(featuresSortedByY)):
+            possibleSplittingPointsPerFeature[i] += splittingPointsAtEachValue[i]
 
         return possibleSplittingPointsPerFeature
 
@@ -79,6 +85,10 @@ class DecisionTree(ABC):
             possibleSplittingPointsPerFeature.append(possibleSplittingPoints)
         
         return possibleSplittingPointsPerFeature
+    
+    def splittingPointsAtEachValue(self, featuresSortedByY):
+        # list(dict.fromkeys(f)) is used to get a unique list of values without changing the ordering
+        return [list(dict.fromkeys(f)) for f in featuresSortedByY]
 
     def calculateSplittingPointErrors(self, possibleSplittingPointsPerFeature, X, y):
         splittingPointErrors = []
