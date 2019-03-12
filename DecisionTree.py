@@ -26,10 +26,10 @@ class DecisionTree(ABC):
         leftX, leftY, rightX, rightY = self.splitData(X, y, feature, splittingPoint)
         node.value = feature, splittingPoint, statistics.mean(y), self.calculateMSE(y), len(X)
 
-        if self.minSamples > len(leftX) and self.minSamples > len(rightX):
-            node.left = node.right = None
-            node.value = statistics.mean(y), self.calculateMSE(y), len(X)
-            return
+        #if self.minSamples > len(leftX) and self.minSamples > len(rightX):
+         #   node.left = node.right = None
+          #  node.value = statistics.mean(y), self.calculateMSE(y), len(X)
+           # return
 
         if self.minSamples > len(leftX):
             node.left = Tree((statistics.mean(leftY), self.calculateMSE(leftY), len(leftX)), node)
