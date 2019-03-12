@@ -21,6 +21,12 @@ class RandomForestRegressor(RandomDecisionTree):
             for i in datapointsToKeep:
                 XToKeep.append(X[i])
                 yToKeep.append(y[i])
+            #XToKeep = []
+            #yToKeep = []
+            #for _ in range(len(X)):
+            #    chosenDataPoint = random.randint(0, len(X) - 1)
+            #    XToKeep.append(X[chosenDataPoint])
+            #    yToKeep.append(y[chosenDataPoint])
 
             self.induction(XToKeep, yToKeep, decisionTree)
             self.pruning(X, y, decisionTree)
@@ -34,7 +40,8 @@ class RandomForestRegressor(RandomDecisionTree):
 
         predictions = []
         for x in X:
-            prediction = None
+            prediction = 0
+            amtOfDecisionTrees = len(self.decisionTrees)
             for decisionTree in self.decisionTrees:
                 node = decisionTree
                 while node.left is not None or node.right is not None:
@@ -43,15 +50,12 @@ class RandomForestRegressor(RandomDecisionTree):
                     else:
                         node = node.right
                 
-                if prediction is None:
-                    prediction = node.value[0]
-                elif node.value:
+                if node.value:
                     prediction += node.value[0]
+                else:
+    	            amtOfDecisionTrees -= 1
             
-            if prediction:
-                prediction = prediction / len(self.decisionTrees)
-
-            predictions.append(prediction)
+            predictions.append(prediction / amtOfDecisionTrees)
         return predictions if 1 < len(predictions) else predictions[0]
 
     def visualize(self, name="random", header=None):
