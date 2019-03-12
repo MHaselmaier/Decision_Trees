@@ -26,6 +26,11 @@ class DecisionTree(ABC):
         leftX, leftY, rightX, rightY = self.splitData(X, y, feature, splittingPoint)
         node.value = feature, splittingPoint, statistics.mean(y), self.calculateMSE(y), len(X)
 
+        if self.minSamples > len(leftX) and self.minSamples > len(rightX):
+            node.left = node.right = None
+            node.value = statistics.mean(y), self.calculateMSE(y), len(X)
+            return
+
         if self.minSamples > len(leftX):
             node.left = Tree((statistics.mean(leftY), self.calculateMSE(leftY), len(leftX)), node)
         else:
@@ -36,10 +41,6 @@ class DecisionTree(ABC):
         else:
             node.right = Tree(parent=node)
             self.induction(rightX, rightY, node.right)
-
-        if self.minSamples > len(leftX) and self.minSamples > len(leftY):
-            node.left = node.right = None
-            node.value = statistics.mean(y), self.calculateMSE(y), len(X)
 
     def findBestSplittingPoint(self, X, y):
         featuresSortedByY = self.sortFeaturesByY(X, y)
@@ -60,17 +61,17 @@ class DecisionTree(ABC):
         return featuresSortedByY
 
     def calculatePossibleSplittingPointsPerFeature(self, featuresSortedByY):
-        possibleSplittingPointsPerFeature = [[] for _ in featuresSortedByY]
+        possibleSplittingPointsPerFeature = [set() for _ in featuresSortedByY]
 
         percentileSplittingPoints = self.percentileSplittingPoints(5, featuresSortedByY)
-        for i in range(len(featuresSortedByY)):
-            possibleSplittingPointsPerFeature[i] += percentileSplittingPoints[i]
+        for i, _ in enumerate(percentileSplittingPoints):
+            possibleSplittingPointsPerFeature[i] |= percentileSplittingPoints[i]
 
         splittingPointsAtEachValue = self.splittingPointsAtEachValue(featuresSortedByY)
-        for i in range(len(featuresSortedByY)):
-            possibleSplittingPointsPerFeature[i] += splittingPointsAtEachValue[i]
+        for i, _ in enumerate(splittingPointsAtEachValue):
+            possibleSplittingPointsPerFeature[i] |= splittingPointsAtEachValue[i]
 
-        return possibleSplittingPointsPerFeature
+        return [list(possibleSplittingPoints) for possibleSplittingPoints in possibleSplittingPointsPerFeature]
 
     def percentileSplittingPoints(self, stepsize, featuresSortedByY):
         if 0 >= stepsize or 100 <= stepsize:
@@ -79,16 +80,15 @@ class DecisionTree(ABC):
         possibleSplittingPointsPerFeature = []
 
         for feature in featuresSortedByY:
-            possibleSplittingPoints = []
+            possibleSplittingPoints = set()
             for i in range(0, 100 + 1, stepsize):
-                possibleSplittingPoints.append(np.percentile(feature, i))
+                possibleSplittingPoints.add(np.percentile(feature, i))
             possibleSplittingPointsPerFeature.append(possibleSplittingPoints)
         
         return possibleSplittingPointsPerFeature
     
     def splittingPointsAtEachValue(self, featuresSortedByY):
-        # list(dict.fromkeys(f)) is used to get a unique list of values without changing the ordering
-        return [list(dict.fromkeys(f)) for f in featuresSortedByY]
+        return [set(f) for f in featuresSortedByY]
 
     def calculateSplittingPointErrors(self, possibleSplittingPointsPerFeature, X, y):
         splittingPointErrors = []
