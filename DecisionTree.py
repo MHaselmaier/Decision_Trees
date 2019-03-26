@@ -9,8 +9,9 @@ from Tree import Tree
 
 
 class DecisionTree(ABC):
-    def __init__(self, minSamples=5):
+    def __init__(self, minSamples=5, maxDepth=math.inf):
         self.minSamples = minSamples
+        self.maxDepth = maxDepth
 
     @abstractmethod
     def fit(self, X, y):
@@ -26,10 +27,10 @@ class DecisionTree(ABC):
         leftX, leftY, rightX, rightY = self.splitData(X, y, feature, splittingPoint)
         node.value = feature, splittingPoint, statistics.mean(y), self.calculateMSE(y), len(X)
 
-        #if self.minSamples > len(leftX) and self.minSamples > len(rightX):
-         #   node.left = node.right = None
-          #  node.value = statistics.mean(y), self.calculateMSE(y), len(X)
-           # return
+        if self.maxDepth < self.calculateDepthAtNode(node):
+            node.left = node.right = None
+            node.value = statistics.mean(y), self.calculateMSE(y), len(X)
+            return
 
         if self.minSamples > len(leftX):
             node.left = Tree((statistics.mean(leftY), self.calculateMSE(leftY), len(leftX)), node)
@@ -157,6 +158,13 @@ class DecisionTree(ABC):
             mse += math.pow(y[i] - prediction, 2)
 
         return mse / len(y)
+
+    def calculateDepthAtNode(self, node):
+        depth = 1
+        while node.parent:
+            node = node.parent
+            depth += 1
+        return depth
 
     def pruning(self, X, y, node):
         if node is None:

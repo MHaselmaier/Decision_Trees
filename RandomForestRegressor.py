@@ -8,8 +8,8 @@ from Tree import Tree
 
 
 class RandomForestRegressor(RandomDecisionTree):
-    def __init__(self, minSamples=5, usedTrees=5, percentageOfDatapointsPerTree=0.7):
-        super().__init__(minSamples=5)
+    def __init__(self, minSamples=5, maxDepth=5, usedTrees=5, percentageOfDatapointsPerTree=0.7):
+        super().__init__(minSamples=5, maxDepth=maxDepth)
         self.decisionTrees = [Tree() for _ in range(usedTrees)]
         self.percentageOfDatapointsPerTree = percentageOfDatapointsPerTree
 

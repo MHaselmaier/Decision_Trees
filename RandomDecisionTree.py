@@ -4,8 +4,8 @@ from DecisionTree import DecisionTree
 
 
 class RandomDecisionTree(DecisionTree):
-    def __init__(self, minSamples=5):
-        super().__init__(minSamples=5)
+    def __init__(self, minSamples=5, maxDepth=5):
+        super().__init__(minSamples=5, maxDepth=maxDepth)
 
     def calculatePossibleSplittingPointsPerFeature(self, featuresSortedByY):
         possibleSplittingPointsPerFeature = super().calculatePossibleSplittingPointsPerFeature(featuresSortedByY)
