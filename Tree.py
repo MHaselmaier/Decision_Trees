@@ -1,4 +1,5 @@
 import graphviz
+import json
 
 class Tree:
     value = None
@@ -60,3 +61,24 @@ class Tree:
         
         if render:
             dot.render(name, view=True, cleanup=True)
+    
+    def toJSON(self, valueToJSON=None):
+        if valueToJSON == None:
+            valueToJSON = lambda value: json.dumps(value)
+
+        if self.left is None and self.right is None:
+            return valueToJSON(self.value)
+
+        children = []
+        if self.left:
+            children.append(json.loads(self.left.toJSON(valueToJSON=valueToJSON)))
+        else:
+            children.append(None)
+        if self.right:
+            children.append(json.loads(self.right.toJSON(valueToJSON=valueToJSON)))
+        else:
+            children.append(None)
+
+        jsonRepresentation = json.loads(valueToJSON(self.value))
+        jsonRepresentation.update({"children": children})
+        return json.dumps(jsonRepresentation, ensure_ascii=False, separators=(',', ':'))

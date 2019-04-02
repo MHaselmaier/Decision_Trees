@@ -1,6 +1,7 @@
 import collections
 import statistics
 import math
+import json
 
 from DecisionTree import DecisionTree
 from Tree import Tree
@@ -33,5 +34,12 @@ class DecisionTreeRegressor(DecisionTree):
             predictions.append(node.value[0])
         return predictions if 1 < len(predictions) else predictions[0]
 
-    def visualize(self, name="regressor", header=None):
+    def visualize(self, header=None, name="regressor"):
         self.decisionTree.visualize(name=name, valueToText=lambda value : self.valueToText(header, value))
+
+    def toJSON(self, header, name="regressor"):
+        trees = [json.loads(self.decisionTree.toJSON(valueToJSON=lambda value: self.valueToJSON(header, value)))]
+        
+        with open(name + ".json", "w", encoding="utf-8") as f:
+            json.dump({"type": "DecisionTreeRegressor", "trees": trees}, f, ensure_ascii=False, separators=(',', ':'))
+

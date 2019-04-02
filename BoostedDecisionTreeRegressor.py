@@ -3,6 +3,7 @@ import graphviz
 from abc import ABC, abstractmethod
 import collections
 import math
+import json
 
 from DecisionTree import DecisionTree
 from Tree import Tree
@@ -59,7 +60,7 @@ class BoostedDecisionTreeRegressor(DecisionTree):
             predictions.append(prediction)
         return predictions if 1 < len(predictions) else predictions[0]
 
-    def visualize(self, name="boosted", header=None):
+    def visualize(self, header=None, name="boosted"):
         dot = graphviz.Digraph(engine="dot", node_attr={'shape': 'record', 'height': '.1'})
 
         dot.attr(packmode="array")
@@ -68,3 +69,11 @@ class BoostedDecisionTreeRegressor(DecisionTree):
                 self.decisionTrees[i].visualize(name + str(i), d, lambda value : self.valueToText(header, value))
 
         dot.render(name, view=True, cleanup=True)
+    
+    def toJSON(self, header, name="boosted"):
+        trees = []
+        for decisionTree in self.decisionTrees:
+            trees.append(json.loads(decisionTree.toJSON(valueToJSON=lambda value: self.valueToJSON(header, value))))
+
+        with open(name + ".json", "w", encoding="utf-8") as f:
+            json.dump({"type": "BoostedDecisionTreeRegressor", "trees": trees}, f, ensure_ascii=False, separators=(',', ':'))

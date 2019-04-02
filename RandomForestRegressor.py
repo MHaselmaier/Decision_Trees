@@ -2,6 +2,7 @@ import graphviz
 
 import collections
 import random
+import json
 
 from RandomDecisionTree import RandomDecisionTree
 from Tree import Tree
@@ -58,7 +59,7 @@ class RandomForestRegressor(RandomDecisionTree):
             predictions.append(prediction / amtOfDecisionTrees)
         return predictions if 1 < len(predictions) else predictions[0]
 
-    def visualize(self, name="random", header=None):
+    def visualize(self, header=None, name="random"):
         dot = graphviz.Digraph(engine="dot", node_attr={'shape': 'record', 'height': '.1'})
 
         dot.attr(packmode="array")
@@ -67,3 +68,11 @@ class RandomForestRegressor(RandomDecisionTree):
                 self.decisionTrees[i].visualize(name + str(i), d, lambda value : self.valueToText(header, value))
 
         dot.render(name, view=True, cleanup=True)
+    
+    def toJSON(self, header, name="random"):
+        trees = []
+        for decisionTree in self.decisionTrees:
+            trees.append(json.loads(decisionTree.toJSON(valueToJSON=lambda value: self.valueToJSON(header, value))))
+        
+        with open(name + ".json", "w", encoding="utf-8") as f:
+            json.dump({"type": "RandomForestRegressor", "trees": trees}, f, ensure_ascii=False, separators=(',', ':'))

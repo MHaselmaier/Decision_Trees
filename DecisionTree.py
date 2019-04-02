@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 import random
 import statistics
 import math
+import json
 
 from Tree import Tree
 
@@ -233,7 +234,7 @@ class DecisionTree(ABC):
         #return math.sqrt(mse)
     
     @abstractmethod
-    def visualize(self, name="tree", header=None):
+    def visualize(self, header=None, name="tree"):
         pass
     
     def valueToText(self, header, value):
@@ -241,3 +242,13 @@ class DecisionTree(ABC):
             return "mse: " + str(value[1]) + "\\nsamples: " + str(value[2]) + "\\nvalue: " + str(value[0])
 
         return header[value[0]] + "\\n\\<= " + str(value[1]) + "\\nmse: " + str(value[3]) +  "\\nsamples: " + str(value[4]) + "\\nvalue: " + str(value[2])
+
+    @abstractmethod
+    def toJSON(self, header, name="tree"):
+        pass
+    
+    def valueToJSON(self, header, value):
+        if 3 == len(value):
+            return json.dumps({"prediction": value[0]})
+
+        return json.dumps({"variable": header[value[0]], "splittingPoint": value[1]}, ensure_ascii=False)

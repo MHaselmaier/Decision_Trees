@@ -15,7 +15,7 @@ from sklearn.ensemble import GradientBoostingRegressor
 from sklearn import ensemble
 
 
-with open("dataset.csv", encoding="UTF-8") as inputFile:
+with open("dataset.csv", encoding="utf-8") as inputFile:
     reader = csv.reader(inputFile)
 
     header = next(reader)
@@ -37,14 +37,17 @@ with open("dataset.csv", encoding="UTF-8") as inputFile:
     regressor = DecisionTreeRegressor(minSamples=5)
     regressor.fit(X_train, y_train)
     print("Regressor:", regressor.validate(X_test, y_test))
+    regressor.toJSON(header=header)
 
     boostedRegressor = BoostedDecisionTreeRegressor(usedTrees=5)
     boostedRegressor.fit(X_train, y_train)
     print("Boosted Regressor:", boostedRegressor.validate(X_test, y_test))
+    boostedRegressor.toJSON(header=header)
 
     randomRegressor = RandomForestRegressor(usedTrees=5)
     randomRegressor.fit(X_train, y_train)
     print("Random Regressor:", randomRegressor.validate(X_test, y_test))
+    randomRegressor.toJSON(header=header)
 
     #predictionValues = []
     #nodes = [regressor.decisionTree]
