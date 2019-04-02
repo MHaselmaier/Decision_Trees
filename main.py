@@ -9,9 +9,9 @@ import statistics
 from DecisionTreeRegressor import DecisionTreeRegressor
 from RandomForestRegressor import RandomForestRegressor
 from BoostedDecisionTreeRegressor import BoostedDecisionTreeRegressor
+from SKLearnDecisionTree import SKLearnDecisionTree
 
 from sklearn import tree
-from sklearn.ensemble import GradientBoostingRegressor
 from sklearn import ensemble
 
 
@@ -34,20 +34,21 @@ with open("dataset.csv", encoding="utf-8") as inputFile:
     X_test = X[trainingSetSize:]
     y_test = y[trainingSetSize:]
 
-    regressor = DecisionTreeRegressor(minSamples=5)
-    regressor.fit(X_train, y_train)
-    print("Regressor:", regressor.validate(X_test, y_test))
-    regressor.toJSON(header=header)
+    regressors = [
+        ("SK Learn Regressor", SKLearnDecisionTree(tree.DecisionTreeRegressor(min_samples_split=5))),
+        ("Regressor", DecisionTreeRegressor()),
+        ("SK Learn Boosted", SKLearnDecisionTree(ensemble.GradientBoostingRegressor(n_estimators=10, min_samples_split=5, max_depth=4, learning_rate=0.1))),
+        ("Boosted Regressor", BoostedDecisionTreeRegressor(usedTrees=10, maxDepth=4)),
+        ("SK Learn Random", SKLearnDecisionTree(ensemble.RandomForestRegressor(n_estimators=10, min_samples_split=5, max_depth=4))),
+        ("Random Regressor", RandomForestRegressor(usedTrees=10, maxDepth=4))
+    ]
 
-    boostedRegressor = BoostedDecisionTreeRegressor(usedTrees=5)
-    boostedRegressor.fit(X_train, y_train)
-    print("Boosted Regressor:", boostedRegressor.validate(X_test, y_test))
-    boostedRegressor.toJSON(header=header)
+    for name, regressor in regressors:
+        regressor.fit(X_train, y_train)
+        print(name, ":\t", regressor.validate(X_test, y_test))
+        regressor.toJSON(header=header, name=name)
+        regressor.visualize(header=header, name=name)
 
-    randomRegressor = RandomForestRegressor(usedTrees=5)
-    randomRegressor.fit(X_train, y_train)
-    print("Random Regressor:", randomRegressor.validate(X_test, y_test))
-    randomRegressor.toJSON(header=header)
 
     #predictionValues = []
     #nodes = [regressor.decisionTree]
