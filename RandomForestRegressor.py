@@ -30,7 +30,7 @@ class RandomForestRegressor(RandomDecisionTree):
             #    yToKeep.append(y[chosenDataPoint])
 
             self.induction(XToKeep, yToKeep, decisionTree)
-            self.pruning(X, y, decisionTree)
+            #self.pruning(X, y, decisionTree)
 
     def predict(self, X):
         if not isinstance(X, collections.Iterable):

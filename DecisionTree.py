@@ -28,7 +28,7 @@ class DecisionTree(ABC):
         leftX, leftY, rightX, rightY = self.splitData(X, y, feature, splittingPoint)
         node.value = feature, splittingPoint, statistics.mean(y), self.calculateMSE(y), len(X)
 
-        if self.maxDepth < self.calculateDepthAtNode(node):
+        if self.maxDepth <= self.calculateDepthAtNode(node):
             node.left = node.right = None
             node.value = statistics.mean(y), self.calculateMSE(y), len(X)
             return
@@ -66,12 +66,12 @@ class DecisionTree(ABC):
         possibleSplittingPointsPerFeature = [set() for _ in featuresSortedByY]
 
         percentileSplittingPoints = self.percentileSplittingPoints(5, featuresSortedByY)
-        for i, _ in enumerate(percentileSplittingPoints):
-            possibleSplittingPointsPerFeature[i] |= percentileSplittingPoints[i]
+        for i, splittingPoint in enumerate(percentileSplittingPoints):
+            possibleSplittingPointsPerFeature[i] |= splittingPoint
 
         splittingPointsAtEachValue = self.splittingPointsAtEachValue(featuresSortedByY)
-        for i, _ in enumerate(splittingPointsAtEachValue):
-            possibleSplittingPointsPerFeature[i] |= splittingPointsAtEachValue[i]
+        for i, splittingPoint in enumerate(splittingPointsAtEachValue):
+            possibleSplittingPointsPerFeature[i] |= splittingPoint
 
         return [list(possibleSplittingPoints) for possibleSplittingPoints in possibleSplittingPointsPerFeature]
 
