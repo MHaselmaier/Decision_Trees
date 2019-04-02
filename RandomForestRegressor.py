@@ -63,9 +63,9 @@ class RandomForestRegressor(RandomDecisionTree):
         dot = graphviz.Digraph(engine="dot", node_attr={'shape': 'record', 'height': '.1'})
 
         dot.attr(packmode="array")
-        for i in range(len(self.decisionTrees)):
+        for i, tree in enumerate(self.decisionTrees):
             with dot.subgraph(name="tree" + str(i)) as d:
-                self.decisionTrees[i].visualize(name + str(i), d, lambda value : self.valueToText(header, value))
+                tree.visualize(name + str(i), d, lambda value : self.valueToText(header, value))
 
         dot.render(name, view=True, cleanup=True)
     
