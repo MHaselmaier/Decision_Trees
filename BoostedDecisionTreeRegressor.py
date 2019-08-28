@@ -11,7 +11,7 @@ from Tree import Tree
 
 
 class BoostedDecisionTreeRegressor(DecisionTree):
-    def __init__(self, minSamples=5, maxDepth=5, usedTrees=5, learningRate=0.1):
+    def __init__(self, minSamples=5, maxDepth=5, usedTrees=5, learningRate=0.05):
         super().__init__(minSamples=minSamples, maxDepth=maxDepth)
         self.decisionTrees = [Tree() for _ in range(usedTrees + 1)]
         self.learningRate = learningRate
@@ -23,10 +23,6 @@ class BoostedDecisionTreeRegressor(DecisionTree):
         for i, decisionTree in enumerate(self.decisionTrees[1:], 1):
             self.induction(X, currentY, decisionTree)
             currentY = self.calculateNewY(X, y, i + 1)
-        #currentY = y
-        #for i, decisionTree in enumerate(self.decisionTrees):
-            #self.pruning(X, currentY, decisionTree)
-            #currentY = self.calculateNewY(X, y, i + 1)
     
     def calculateNewY(self, X, y, trees):
         newY = []
@@ -44,6 +40,10 @@ class BoostedDecisionTreeRegressor(DecisionTree):
             else:
                 node = node.right
         return node.value[0]
+
+    def prune(self, X, y):
+        for decisionTree in self.decisionTrees:
+            self.pruning(X, y, decisionTree)
 
     def predict(self, X):
         if not isinstance(X, collections.Iterable):

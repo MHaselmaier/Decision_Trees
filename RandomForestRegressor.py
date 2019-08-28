@@ -10,7 +10,7 @@ from Tree import Tree
 
 class RandomForestRegressor(RandomDecisionTree):
     def __init__(self, minSamples=5, maxDepth=5, usedTrees=5, percentageOfDatapointsPerTree=0.7):
-        super().__init__(minSamples=5, maxDepth=maxDepth)
+        super().__init__(minSamples=minSamples, maxDepth=maxDepth)
         self.decisionTrees = [Tree() for _ in range(usedTrees)]
         self.percentageOfDatapointsPerTree = percentageOfDatapointsPerTree
 
@@ -22,15 +22,8 @@ class RandomForestRegressor(RandomDecisionTree):
             for i in datapointsToKeep:
                 XToKeep.append(X[i])
                 yToKeep.append(y[i])
-            #XToKeep = []
-            #yToKeep = []
-            #for _ in range(len(X)):
-            #    chosenDataPoint = random.randint(0, len(X) - 1)
-            #    XToKeep.append(X[chosenDataPoint])
-            #    yToKeep.append(y[chosenDataPoint])
 
             self.induction(XToKeep, yToKeep, decisionTree)
-            #self.pruning(X, y, decisionTree)
 
     def predict(self, X):
         if not isinstance(X, collections.Iterable):

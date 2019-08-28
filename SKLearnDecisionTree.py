@@ -21,6 +21,9 @@ class SKLearnDecisionTree(DecisionTree):
     def fit(self, X, y):
         self.decisionTree.fit(X, y)
 
+    def prune(self, X, y):
+        return
+
     def predict(self, X):
         return self.decisionTree.predict(X)
 

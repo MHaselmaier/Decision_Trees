@@ -161,11 +161,15 @@ class DecisionTree(ABC):
         return mse / len(y)
 
     def calculateDepthAtNode(self, node):
-        depth = 1
+        depth = 0
         while node.parent:
             node = node.parent
             depth += 1
         return depth
+
+    @abstractmethod
+    def prune(self, X, y):
+        pass
 
     def pruning(self, X, y, node):
         if node is None:
@@ -181,6 +185,13 @@ class DecisionTree(ABC):
 
             errorBeforePruning = self.validate(X, y)
             _, yAtParent = self.calculateXyAtNode(X, y, node.parent)
+
+            if 0 == len(yAtParent):
+                node.parent.value = savedParentValue
+                node.parent.left = savedParentLeft
+                node.parent.right = savedParentRight
+                return
+
             node.parent.left = node.parent.right = None
             node.parent.value = statistics.mean(yAtParent), self.calculateMSE(yAtParent), len(yAtParent)
             errorAfterPrunning = self.validate(X, y)
@@ -224,14 +235,15 @@ class DecisionTree(ABC):
 
     def validate(self, X, y):
         # Standard Error of Regression
-        distances = [abs(yActual - yPredict) for (yActual, yPredict) in zip(y, self.predict(X))]
-        return statistics.mean(distances)
+        #distances = [abs(yActual - yPredict) for (yActual, yPredict) in zip(y, self.predict(X))]
+        #return statistics.mean(distances)
         
         # RMSE:
-        #mse = 0
-        #for i in range(len(X)):
-        #   mse += (math.pow(y[i] - self.predict(X[i]), 2)) / len(X)
-        #return math.sqrt(mse)
+        mse = 0
+        for (yActual, yPredict) in zip(y, self.predict(X)):
+           mse += (math.pow(yActual - yPredict, 2))
+        mse /= len(X)
+        return math.sqrt(mse)
     
     @abstractmethod
     def visualize(self, header=None, name="tree"):

@@ -5,7 +5,7 @@ from DecisionTree import DecisionTree
 
 class RandomDecisionTree(DecisionTree):
     def __init__(self, minSamples=5, maxDepth=5):
-        super().__init__(minSamples=5, maxDepth=maxDepth)
+        super().__init__(minSamples=minSamples, maxDepth=maxDepth)
 
     def calculatePossibleSplittingPointsPerFeature(self, featuresSortedByY):
         possibleSplittingPointsPerFeature = super().calculatePossibleSplittingPointsPerFeature(featuresSortedByY)
@@ -15,3 +15,6 @@ class RandomDecisionTree(DecisionTree):
             possibleSplittingPointsPerFeature[feature] = []
 
         return possibleSplittingPointsPerFeature
+
+    def prune(self, X, y):
+        return

@@ -14,6 +14,8 @@ class DecisionTreeRegressor(DecisionTree):
 
     def fit(self, X, y):
         self.induction(X, y, self.decisionTree)
+
+    def prune(self, X, y):
         self.pruning(X, y, self.decisionTree)
 
     def predict(self, X):
